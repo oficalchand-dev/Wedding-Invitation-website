@@ -1647,6 +1647,29 @@
     .celebration-sticker { width: 98px; height: 98px; font-size: 2.4rem; }
     .tap-invite-modal { padding: 22px 18px 16px; }
   }
+  /* Mobile Tap Highlight Fix */
+
+*{
+  -webkit-tap-highlight-color: transparent;
+}
+
+img,
+button,
+a,
+span,
+div,
+i,
+svg{
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
+
+input,
+textarea{
+  -webkit-user-select:text;
+  user-select:text;
+}
 </style>
 </head>
 <body>
@@ -2747,6 +2770,26 @@ setInterval(() => {
   });
 })();
 
+</script>
+  <script>
+// Prevent blue text/icon selection on mobile
+document.addEventListener('selectstart', function(e) {
+    if (
+        e.target.tagName !== 'INPUT' &&
+        e.target.tagName !== 'TEXTAREA'
+    ) {
+        e.preventDefault();
+    }
+});
+
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+// Remove tap highlight
+document.addEventListener('touchstart', function(){}, {
+    passive: true
+});
 </script>
 </body>
 </html>
