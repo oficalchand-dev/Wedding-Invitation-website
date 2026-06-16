@@ -2500,7 +2500,6 @@ function setMusicButton(isPlaying) {
 
 function playMusic(unmute = true) {
   const bg = document.getElementById('bg-audio');
-  const overlay = document.getElementById('unmute-overlay');
 
   if (!bg) return;
 
@@ -2519,16 +2518,12 @@ function playMusic(unmute = true) {
       musicSource = bg;
       setMusicButton(true);
 
-      if (!bg.muted && overlay) {
-        overlay.style.display = 'none';
-      }
+      
     }).catch(() => {
       musicPlaying = false;
       setMusicButton(false);
 
-      if (overlay) {
-        overlay.style.display = 'block';
-      }
+    
     });
   }
 }
@@ -2593,10 +2588,6 @@ window.addEventListener('load', () => {
           const unmute = () => {
             bg.muted = false;
 
-            if (overlay) {
-              overlay.style.display = 'none';
-            }
-
             document.removeEventListener('click', unmute);
             document.removeEventListener('touchstart', unmute);
           };
@@ -2607,9 +2598,7 @@ window.addEventListener('load', () => {
         }).catch(() => {
           btn.textContent = '🎵';
 
-          if (overlay) {
-            overlay.style.display = 'block';
-          }
+         
         });
       }
     });
@@ -2618,7 +2607,6 @@ window.addEventListener('load', () => {
 // First tap/click/scroll will unmute and play audio
 function unlockMusicOnce() {
   const bg = document.getElementById('bg-audio');
-  const overlay = document.getElementById('unmute-overlay');
 
   if (!bg) return;
 
@@ -2626,10 +2614,6 @@ function unlockMusicOnce() {
   bg.volume = 0.45;
 
   playMusic(true);
-
-  if (overlay) {
-    overlay.style.display = 'none';
-  }
 
   document.removeEventListener('click', unlockMusicOnce);
   document.removeEventListener('touchstart', unlockMusicOnce);
