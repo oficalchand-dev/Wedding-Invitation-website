@@ -2556,38 +2556,65 @@ function toggleMusic() {
   }
 }
 
-// Try muted autoplay on page open
+// Autoplay with muted fallback and unmute-on-first-interaction
+
 window.addEventListener('load', () => {
   const bg = document.getElementById('bg-audio');
+  const btn = document.getElementById('music-btn');
   const overlay = document.getElementById('unmute-overlay');
 
-  if (!bg) return;
+  if (!btn) return;
+  if (!bg) {
+    btn.textContent = '🎵';
+    return;
+  }
 
   bg.volume = 0.45;
-  bg.muted = true;
 
   const p = bg.play();
 
   if (p !== undefined) {
     p.then(() => {
+      btn.textContent = '🔇';
       musicPlaying = true;
       musicSource = bg;
-      setMusicButton(true);
-
-      if (overlay) {
-        overlay.style.display = 'block';
-      }
     }).catch(() => {
-      musicPlaying = false;
-      setMusicButton(false);
 
-      if (overlay) {
-        overlay.style.display = 'block';
+      bg.muted = true;
+
+      const p2 = bg.play();
+
+      if (p2 !== undefined) {
+        p2.then(() => {
+          btn.textContent = '🔇';
+          musicPlaying = true;
+          musicSource = bg;
+
+          const unmute = () => {
+            bg.muted = false;
+
+            if (overlay) {
+              overlay.style.display = 'none';
+            }
+
+            document.removeEventListener('click', unmute);
+            document.removeEventListener('touchstart', unmute);
+          };
+
+          document.addEventListener('click', unmute, { once: true });
+          document.addEventListener('touchstart', unmute, { once: true });
+
+        }).catch(() => {
+          btn.textContent = '🎵';
+
+          if (overlay) {
+            overlay.style.display = 'block';
+          }
+        });
       }
     });
   }
 });
-
 // First tap/click/scroll will unmute and play audio
 function unlockMusicOnce() {
   const bg = document.getElementById('bg-audio');
