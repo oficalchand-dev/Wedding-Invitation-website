@@ -1682,8 +1682,8 @@ textarea{
 
 <!-- Music -->
 <div id="music-btn" title="Toggle ambient music" onclick="toggleMusic()">🎵</div>
-<audio id="bg-audio" src="Wedding Nasheed (Slowed  Reverb)  A Soulful Love Melody.mp3" loop muted playsinline preload="auto"></audio>
-
+<audio id="bg-audio" src="Wedding Nasheed (Slowed  Reverb)  A Soulful Love Melody.mp3" loop preload="auto"></audio>
+<div id="unmute-overlay" style="display:none;position:fixed;left:50%;top:78%;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:#fff;padding:10px 16px;border-radius:24px;z-index:9999;font-weight:600;backdrop-filter:blur(4px);">Tap anywhere to enable audio</div>
 
 <!-- Back to top -->
 <div id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">☝️</div>
@@ -2180,6 +2180,7 @@ nav {
 }
 
 body.light-mode {
+  
   --gold: #B8891E;
   --gold-light: #D4AF37;
   --gold-dim: #8a6a17;
@@ -2492,137 +2493,56 @@ function openMap(venue) {
 // ─── MUSIC (ambient) ───
 let musicPlaying = false;
 let musicSource = null;
-
-function setMusicButton(isPlaying) {
-  const btn = document.getElementById('music-btn');
-  if (btn) btn.textContent = isPlaying ? '🔇' : '🎵';
-}
-
-function playMusic(unmute = true) {
-  const bg = document.getElementById('bg-audio');
-
-  if (!bg) return;
-
-  bg.volume = 0.45;
-  bg.loop = true;
-
-  if (unmute) {
-    bg.muted = false;
-  }
-
-  const playPromise = bg.play();
-
-  if (playPromise !== undefined) {
-    playPromise.then(() => {
-      musicPlaying = true;
-      musicSource = bg;
-      setMusicButton(true);
-
-      
-    }).catch(() => {
-      musicPlaying = false;
-      setMusicButton(false);
-
-    
-    });
-  }
-}
-
-function pauseMusic() {
-  const bg = document.getElementById('bg-audio');
-
-  if (!bg) return;
-
-  bg.pause();
-  musicPlaying = false;
-  musicSource = null;
-  setMusicButton(false);
-}
-
 function toggleMusic() {
+  const btn = document.getElementById('music-btn');
   const bg = document.getElementById('bg-audio');
-
-  if (!bg) return;
-
-  if (musicPlaying && !bg.paused && !bg.muted) {
-    pauseMusic();
+  if (!btn) return;
+  if (!musicPlaying) {
+    if (bg) {
+      bg.muted = false;
+      bg.volume = 0.45;
+      const p = bg.play();
+      if (p !== undefined) {
+        p.then(() => { btn.textContent = '🔇'; musicPlaying = true; }).catch(() => { btn.textContent = '🎵'; musicPlaying = false; });
+      } else { btn.textContent = '🔇'; musicPlaying = true; }
+      musicSource = bg;
+    } else { btn.textContent = '🎵'; }
   } else {
-    playMusic(true);
+    if (musicSource && musicSource.pause) { musicSource.pause(); musicSource.currentTime = 0; }
+    btn.textContent = '🎵'; musicPlaying = false; musicSource = null;
   }
 }
 
 // Autoplay with muted fallback and unmute-on-first-interaction
-
 window.addEventListener('load', () => {
   const bg = document.getElementById('bg-audio');
   const btn = document.getElementById('music-btn');
   const overlay = document.getElementById('unmute-overlay');
-
   if (!btn) return;
-  if (!bg) {
-    btn.textContent = '🎵';
-    return;
-  }
-
+  if (!bg) { btn.textContent = '🎵'; return; }
   bg.volume = 0.45;
-
+  // Try normal play first
   const p = bg.play();
-
   if (p !== undefined) {
-    p.then(() => {
-      btn.textContent = '🔇';
-      musicPlaying = true;
-      musicSource = bg;
-    }).catch(() => {
-
-      bg.muted = true;
-
-      const p2 = bg.play();
-
-      if (p2 !== undefined) {
-        p2.then(() => {
-          btn.textContent = '🔇';
-          musicPlaying = true;
-          musicSource = bg;
-
-          const unmute = () => {
-            bg.muted = false;
-
-            document.removeEventListener('click', unmute);
-            document.removeEventListener('touchstart', unmute);
-          };
-
-          document.addEventListener('click', unmute, { once: true });
-          document.addEventListener('touchstart', unmute, { once: true });
-
-        }).catch(() => {
-          btn.textContent = '🎵';
-
-         
-        });
-      }
-    });
-  }
+    p.then(() => { btn.textContent = '🔇'; musicPlaying = true; musicSource = bg; })
+     .catch(() => {
+       // Try muted autoplay
+       bg.muted = true;
+       const p2 = bg.play();
+       if (p2 !== undefined) {
+         p2.then(() => {
+           if (overlay) overlay.style.display = 'block';
+           btn.textContent = '🔇'; musicPlaying = true; musicSource = bg;
+           const unmute = () => {
+             bg.muted = false; bg.volume = 0.45; if (overlay) overlay.style.display = 'none';
+             btn.textContent = '🔇'; musicPlaying = true; document.removeEventListener('click', unmute);
+           };
+           document.addEventListener('click', unmute, { once: true });
+         }).catch(() => { btn.textContent = '🎵'; musicPlaying = false; });
+       } else { btn.textContent = '🎵'; musicPlaying = false; }
+     });
+  } else { btn.textContent = '🔇'; musicPlaying = true; musicSource = bg; }
 });
-// First tap/click/scroll will unmute and play audio
-function unlockMusicOnce() {
-  const bg = document.getElementById('bg-audio');
-
-  if (!bg) return;
-
-  bg.muted = false;
-  bg.volume = 0.45;
-
-  playMusic(true);
-
-  document.removeEventListener('click', unlockMusicOnce);
-  document.removeEventListener('touchstart', unlockMusicOnce);
-  document.removeEventListener('scroll', unlockMusicOnce);
-}
-
-document.addEventListener('click', unlockMusicOnce, { once: true });
-document.addEventListener('touchstart', unlockMusicOnce, { once: true, passive: true });
-document.addEventListener('scroll', unlockMusicOnce, { once: true, passive: true });
 
 // ─── SCRATCH CARD REVEAL ───
 function setupScratchCard() {
@@ -2947,9 +2867,11 @@ function applyTheme(mode) {
     document.body.classList.remove('light-mode');
     if (themeIcon) themeIcon.textContent = '🌙';
   }
+  localStorage.setItem('weddingTheme', mode);
 }
 
-applyTheme('dark');
+const savedTheme = localStorage.getItem('weddingTheme') || 'dark';
+applyTheme(savedTheme);
 
 if (themeToggle) {
   themeToggle.addEventListener('click', () => {
@@ -2957,6 +2879,7 @@ if (themeToggle) {
     applyTheme(isLight ? 'dark' : 'light');
   });
 }
+
 </script>
   <script>
 // Prevent blue text/icon selection on mobile
@@ -2977,31 +2900,6 @@ document.addEventListener('contextmenu', function(e) {
 document.addEventListener('touchstart', function(){}, {
     passive: true
 });
-    // Force website to always open in Dark Mode
-(function () {
-  document.body.classList.remove('light-mode');
-
-  const themeToggle = document.getElementById('theme-toggle');
-  const themeIcon = document.querySelector('.theme-icon');
-
-  function applyTheme(mode) {
-    if (mode === 'light') {
-      document.body.classList.add('light-mode');
-      if (themeIcon) themeIcon.textContent = '☀️';
-    } else {
-      document.body.classList.remove('light-mode');
-      if (themeIcon) themeIcon.textContent = '🌙';
-    }
-  }
-
-  applyTheme('dark');
-
-  if (themeToggle) {
-    themeToggle.addEventListener('click', function () {
-      const isLight = document.body.classList.contains('light-mode');
-      applyTheme(isLight ? 'dark' : 'light');
-    });
-  }
-})();
+</script>
 </body>
 </html>
