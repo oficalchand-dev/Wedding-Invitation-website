@@ -1708,7 +1708,12 @@ textarea{
     <li><a href="#game">Game</a></li>
     <li><a href="#blessings">Blessings</a></li>
   </ul>
+<div class="nav-actions">
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+    <span class="theme-icon">🌙</span>
+  </button>
   <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+</div>
 </nav>
 
 <!-- PARTICLES CONTAINER -->
@@ -2134,6 +2139,95 @@ We eagerly await your presence.</div>
     .footer-stars { height: 110px; }
     .site-footer { padding: 48px 14px; }
   }
+  /* ─── PREMIUM DARK/LIGHT MODE TOGGLE ─── */
+
+body {
+  transition: background 0.45s ease, color 0.45s ease;
+}
+
+body.light-mode {
+  --emerald: #0F5132;
+  --emerald-light: #1a7a4a;
+  --gold: #B8891E;
+  --gold-light: #D4AF37;
+  --gold-dim: #8a6a17;
+  --ivory: #102016;
+  --ivory-dim: #355242;
+  --bg: #FFF8E7;
+  --bg2: #F7EFD8;
+  --bg3: #EFE3C8;
+  --text-light: #3b5a48;
+}
+
+body.light-mode nav {
+  background: rgba(255, 248, 231, 0.78);
+  border-bottom: 1px solid rgba(184, 137, 30, 0.22);
+}
+
+body.light-mode .hero-bg {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,175,55,0.20) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 50% 100%, rgba(15,81,50,0.10) 0%, transparent 70%),
+    var(--bg);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-toggle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(212,175,55,0.38);
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.28), transparent 35%),
+    linear-gradient(135deg, rgba(15,81,50,0.85), rgba(212,175,55,0.18));
+  color: var(--gold);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 1.18rem;
+  box-shadow: 0 0 18px rgba(212,175,55,0.16);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.theme-toggle:hover,
+.theme-toggle:active {
+  transform: scale(1.08) rotate(8deg);
+  box-shadow: 0 0 26px rgba(212,175,55,0.35);
+}
+
+body.light-mode .theme-toggle {
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.65), transparent 35%),
+    linear-gradient(135deg, #fff3c4, #d4af37);
+  color: #081C15;
+}
+
+.theme-icon {
+  display: inline-block;
+  transition: transform 0.35s ease;
+}
+
+.theme-toggle:active .theme-icon {
+  transform: rotate(180deg) scale(0.9);
+}
+
+@media (max-width: 700px) {
+  .nav-actions {
+    gap: 10px;
+  }
+
+  .theme-toggle {
+    width: 40px;
+    height: 40px;
+    font-size: 1.08rem;
+  }
+}
 </style>
 
 <!-- ═══════════════ SCRIPTS ═══════════════ -->
@@ -2769,6 +2863,30 @@ setInterval(() => {
     }
   });
 })();
+  // ─── DARK / LIGHT MODE TOGGLE ───
+const themeToggle = document.getElementById('theme-toggle');
+const themeIcon = document.querySelector('.theme-icon');
+
+function applyTheme(mode) {
+  if (mode === 'light') {
+    document.body.classList.add('light-mode');
+    if (themeIcon) themeIcon.textContent = '☀️';
+  } else {
+    document.body.classList.remove('light-mode');
+    if (themeIcon) themeIcon.textContent = '🌙';
+  }
+  localStorage.setItem('weddingTheme', mode);
+}
+
+const savedTheme = localStorage.getItem('weddingTheme') || 'dark';
+applyTheme(savedTheme);
+
+if (themeToggle) {
+  themeToggle.addEventListener('click', () => {
+    const isLight = document.body.classList.contains('light-mode');
+    applyTheme(isLight ? 'dark' : 'light');
+  });
+}
 
 </script>
   <script>
