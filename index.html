@@ -2498,39 +2498,26 @@ function setMusicButton(isPlaying) {
   if (btn) btn.textContent = isPlaying ? '🔇' : '🎵';
 }
 
-function playMusic(unmute = true) {
+function playMusic() {
   const bg = document.getElementById('bg-audio');
-
   if (!bg) return;
 
+  bg.muted = false;
   bg.volume = 0.45;
   bg.loop = true;
 
-  if (unmute) {
-    bg.muted = false;
-  }
-
-  const playPromise = bg.play();
-
-  if (playPromise !== undefined) {
-    playPromise.then(() => {
-      musicPlaying = true;
-      musicSource = bg;
-      setMusicButton(true);
-
-      
-    }).catch(() => {
-      musicPlaying = false;
-      setMusicButton(false);
-
-    
-    });
-  }
+  bg.play().then(() => {
+    musicPlaying = true;
+    musicSource = bg;
+    setMusicButton(true);
+  }).catch(() => {
+    musicPlaying = false;
+    setMusicButton(false);
+  });
 }
 
 function pauseMusic() {
   const bg = document.getElementById('bg-audio');
-
   if (!bg) return;
 
   bg.pause();
@@ -2541,90 +2528,19 @@ function pauseMusic() {
 
 function toggleMusic() {
   const bg = document.getElementById('bg-audio');
-
   if (!bg) return;
 
-  if (musicPlaying && !bg.paused && !bg.muted) {
+  if (musicPlaying && !bg.paused) {
     pauseMusic();
   } else {
-    playMusic(true);
+    playMusic();
   }
 }
 
-// Autoplay with muted fallback and unmute-on-first-interaction
-
+// Try autoplay when website opens
 window.addEventListener('load', () => {
-  const bg = document.getElementById('bg-audio');
-  const btn = document.getElementById('music-btn');
-  const overlay = document.getElementById('unmute-overlay');
-
-  if (!btn) return;
-  if (!bg) {
-    btn.textContent = '🎵';
-    return;
-  }
-
-  bg.volume = 0.45;
-
-  const p = bg.play();
-
-  if (p !== undefined) {
-    p.then(() => {
-      btn.textContent = '🔇';
-      musicPlaying = true;
-      musicSource = bg;
-    }).catch(() => {
-
-      bg.muted = true;
-
-      const p2 = bg.play();
-
-      if (p2 !== undefined) {
-        p2.then(() => {
-          btn.textContent = '🔇';
-          musicPlaying = true;
-          musicSource = bg;
-
-          const unmute = () => {
-            bg.muted = false;
-
-            document.removeEventListener('click', unmute);
-            document.removeEventListener('touchstart', unmute);
-          };
-
-          document.addEventListener('click', unmute, { once: true });
-          document.addEventListener('touchstart', unmute, { once: true });
-
-        }).catch(() => {
-          btn.textContent = '🎵';
-
-         
-        });
-      }
-    });
-  }
-});
-// First tap/click/scroll will unmute and play audio
-function unlockMusicOnce() {
-  const bg = document.getElementById('bg-audio');
-
-  if (!bg) return;
-
-  bg.muted = false;
-  bg.volume = 0.45;
-
-  playMusic(true);
-
-  document.removeEventListener('click', unlockMusicOnce);
-  document.removeEventListener('touchstart', unlockMusicOnce);
-  document.removeEventListener('scroll', unlockMusicOnce);
-}
-
-document.addEventListener('click', unlockMusicOnce, { once: true });
-document.addEventListener('touchstart', unlockMusicOnce, { once: true, passive: true });
-document.addEventListener('scroll', unlockMusicOnce, { once: true, passive: true });
-
-// ─── SCRATCH CARD REVEAL ───
+  playMusic();
+});// ─── SCRATCH CARD REVEAL ───
 function setupScratchCard() {
   const overlay = document.getElementById('scratch-overlay');
   const canvas = document.getElementById('scratch-canvas');
