@@ -2896,6 +2896,31 @@ document.addEventListener('contextmenu', function(e) {
 document.addEventListener('touchstart', function(){}, {
     passive: true
 });
-</script>
+    // Force website to always open in Dark Mode
+(function () {
+  document.body.classList.remove('light-mode');
+
+  const themeToggle = document.getElementById('theme-toggle');
+  const themeIcon = document.querySelector('.theme-icon');
+
+  function applyTheme(mode) {
+    if (mode === 'light') {
+      document.body.classList.add('light-mode');
+      if (themeIcon) themeIcon.textContent = '☀️';
+    } else {
+      document.body.classList.remove('light-mode');
+      if (themeIcon) themeIcon.textContent = '🌙';
+    }
+  }
+
+  applyTheme('dark');
+
+  if (themeToggle) {
+    themeToggle.addEventListener('click', function () {
+      const isLight = document.body.classList.contains('light-mode');
+      applyTheme(isLight ? 'dark' : 'light');
+    });
+  }
+})();
 </body>
 </html>
